@@ -1,0 +1,67 @@
+{
+  "items": [
+    {
+      "icon": "icon_bottle",
+      "name": "Amino acids",
+      "cost": 50,
+      "mod": 0.3,
+      "damage": 0.10
+    },
+
+    {
+      "icon": "icon_bottle",
+      "name": "Creatine",
+      "cost": 20,
+      "mod": 0.1,
+      "damage": 0.05
+    },
+
+    {
+      "icon": "icon_bottle",
+      "name": "Protein",
+      "cost": 35,
+      "mod": 0.2,
+      "damage": 0.15
+    },
+
+    {
+      "icon": "icon_inject",
+      "name": "Steroids",
+      "cost": 200,
+      "mod": 0.7,
+      "damage": 0.35
+    },
+
+    {
+      "icon": "icon_inject",
+      "name": "Synthol",
+      "cost": 100,
+      "mod": 0.5,
+      "damage": 0.25
+    },
+
+    {
+      "icon": "icon_medkit",
+      "name": "Purifier Kit",
+      "cost": 5000,
+      "mod": 0,
+      "damage": -0.99
+    },
+
+    {
+      "icon": "icon_pills",
+      "name": "Med Pills",
+      "cost": 100,
+      "mod": 0,
+      "damage": -0.1
+    },
+
+    {
+      "icon": "icon_herbs",
+      "name": "Med Herbs",
+      "cost": 50,
+      "mod": 0,
+      "damage": -0.05
+    }
+  ]
+}
