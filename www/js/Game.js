@@ -148,27 +148,27 @@ define(['phaser'], function (Phaser) {
 	};
 
 	Game.prototype.upLeft = function () {
-		this._bar.body.angularVelocity = this._challenge.weight * this._player.balance;
+		this._bar.body.angularVelocity += (this._challenge.weight * this._player.balance) / 100;
 		this.lift();
 	};
 
 	Game.prototype.upRight = function () {
-		this._bar.body.angularVelocity = -(this._challenge.weight * this._player.balance);
+		this._bar.body.angularVelocity += -(this._challenge.weight * this._player.balance) / 100;
 		this.lift();
 	};
 
 	Game.prototype.lift = function () {
-		var str = -(this._player.initStr + (this._player.initStr * (this._player.str / 100)));
-		var weight = this._challenge.weight - (this._challenge.weight * ((this._player.str / 2) / 100));
+		var str = -(this._player.maxStr + (this._player.maxStr * ((this._player.str + this._player.strMod) / 100)));
+		var weight = this._challenge.weight - (this._challenge.weight * (this._player.str / 100));
 
 		this._bar.body.velocity.y = str + weight;
 	};
 
 	Game.prototype.updateLiftMeter = function () {
-		var angularVelocity = Math.round(this._bar.body.angularVelocity);
+		var position = Math.sin(this._bar.body.angle);
 
-		this._liftMeterLeft.y = ((this._bar.y - this._gap - angularVelocity) / this._liftBarLeft.top) * this._liftBarLeft.top;
-		this._liftMeterRight.y = ((this._bar.y - this._gap + angularVelocity) / this._liftBarRight.top) * this._liftBarRight.top;
+		this._liftMeterLeft.y = ((this._bar.y - this._gap - position) / this._liftBarLeft.top) * this._liftBarLeft.top;
+		this._liftMeterRight.y = ((this._bar.y - this._gap + position) / this._liftBarRight.top) * this._liftBarRight.top;
 
 		if (this._liftMeterLeft.y < this._liftBarLeft.top)
 			this._liftMeterLeft.y = this._liftBarLeft.top;

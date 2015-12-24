@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.brofistcorp.fingergym" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="com.brofistcorp.fingergym" version="1.1.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>Finger Gym</name>
     <description>
-        Let your fingers stronger with this game! Set up your weight and try to lift until the top!
+        Set the weight of the bar and try to get to the top!
     </description>
     <author email="brofistoficial@gmail.com" href="http://facebook.com/brofistcorp">
         BroFist Corp
@@ -23,6 +23,7 @@
     </feature>
     <platform name="android">
         <allow-intent href="market:*" />
+        <icon src="www/assets/icon-72px.png" density="hdpi" />
     </platform>
     <platform name="ios">
         <allow-intent href="itms:*" />

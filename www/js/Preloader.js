@@ -30,10 +30,16 @@ define(['phaser'], function (Phaser) {
 	    this.load.image('btn_exit', 'assets/btn_exit.png');
 	    this.load.image('btn_retry', 'assets/btn_retry.png');
 	    this.load.image('btn_continue', 'assets/btn_continue.png');
+	    this.load.image('btn_newgame', 'assets/btn_newgame.png');
 	    this.load.image('btn_prev', 'assets/btn_prev.png');
 	    this.load.image('btn_next', 'assets/btn_next.png');
 	    this.load.image('liftbar', 'assets/liftbar.png');
 	    this.load.image('meter', 'assets/meter.png');
+
+	    // load audio
+	    this.load.audio('sfx_counter', 'assets/sfx_counter.ogg');
+	    this.load.audio('sfx_no_money', 'assets/sfx_no_money.ogg');
+	    this.load.audio('sfx_use_item', 'assets/sfx_use_item.ogg');
     };
     
     Preloader.prototype.create = function () {

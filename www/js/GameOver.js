@@ -8,6 +8,12 @@ define(['phaser'], function (Phaser) {
 	GameOver.prototype.constructor = GameOver;
 
 	GameOver.prototype.init = function () {
+		// load player data
+		this._player = JSON.parse(localStorage.getItem('player'));
+
+		// load challenge data
+		this._challenge = JSON.parse(localStorage.getItem('challenge'));
+
 		// score
 		this._score = 0;
 
@@ -33,9 +39,6 @@ define(['phaser'], function (Phaser) {
 		var styleText = { font: '16px BackTo1982', fill: '#f00', align: 'center', wordWrap: true, wordWrapWidth: this.game.width };
 		var styleTable = { font: '16px BackTo1982', fill: '#fff', tabs: [140] };
 
-		// load challenge data
-		this._challenge = JSON.parse(localStorage.getItem('challenge'));
-
 		// create title label
 		var lblTitle = this.game.add.text(this.game.width / 2, 50, '', styleTitle);
 		var lblText = this.game.add.text(this.game.width / 2, this.game.height / 2, '', styleText);
@@ -51,6 +54,9 @@ define(['phaser'], function (Phaser) {
 		var btnContinue = this.game.add.button(this.game.width / 2 - 80, this.game.height - 50, 'btn_continue', this.newGame, this);
 		var btnRetry = this.game.add.button(this.game.width / 2 - 80, this.game.height - 50, 'btn_retry', this.newGame, this);
 		var btnExit = this.game.add.button(this.game.width / 2 + 80, this.game.height - 50, 'btn_exit', this.exit, this);
+
+		// load sound effects
+		this._sfxCounter = this.game.add.audio('sfx_counter');
 
 		// select if won or the type of game over
 		switch (this._gameOver) {
@@ -83,6 +89,31 @@ define(['phaser'], function (Phaser) {
 				lblTitle.setText('You Died');
 				lblText.setText('Your liver stopped by excessive supplementation');
 				btnContinue.visible = false;
+
+				// save best score
+				localStorage.setItem('bestScore', this._player.score);
+
+				// save record weight
+				localStorage.setItem('recordWeight', this._player.recordWeight);
+
+				// reset player
+				this._player = {
+					str: 1,
+					strMod: 0,
+					balance: 0,
+					health: 100,
+					wallet: 0,
+					score: 0,
+					recordWeight: 0,
+					maxHealth: 100,
+					maxStr: 100
+				};
+
+				// reset challenge
+				this._challenge = {
+					weight: 5,
+					timeLeft: 0
+				};
 				break;
 		}
 
@@ -96,31 +127,32 @@ define(['phaser'], function (Phaser) {
 		btnRetry.anchor.set(0.5);
 		btnExit.anchor.set(0.5);
 
-		// save changes
-		var player = JSON.parse(localStorage.getItem('playerContext')) || JSON.parse(localStorage.getItem('player'));
+		// reset str modifier
+		this._player.strMod = 0;
 
+		// save changes
 		if (!this._gameOver) {
-			player.str += this.STR_INC;
-			player.score += this._score;
-			player.wallet += this._money;
-			player.recordWeight = this._challenge.weight;
+			if (this._player.str < this._player.maxStr)
+				this._player.str += this.STR_INC;
+
+			this._player.score += this._score;
+			this._player.wallet += this._money;
+			this._player.recordWeight = this._challenge.weight;
 
 			this._challenge.weight += this.WEIGHT_INC;
-
-			localStorage.setItem('challenge', JSON.stringify(this._challenge));
 		}
 
-		if (localStorage.getItem('playerContext'))
-			localStorage.removeItem('playerContext');
-
-		localStorage.setItem('player', JSON.stringify(player));
+		localStorage.setItem('player', JSON.stringify(this._player));
+		localStorage.setItem('challenge', JSON.stringify(this._challenge));
 	};
 
 	GameOver.prototype.countScore = function (table, content) {
 		var lblScore = content[2];
 		var count = 0;
 
-		this.game.time.events.loop(50, function () {
+		this.game.time.events.loop(1, function () {
+			this._sfxCounter.play();
+
 			if (count < this._score) {
 				count++;
 				lblScore[1] = count + ' pts';
@@ -137,7 +169,9 @@ define(['phaser'], function (Phaser) {
 
 		this.game.time.removeAll();
 
-		this.game.time.events.loop(50, function () {
+		this.game.time.events.loop(1, function () {
+			this._sfxCounter.play();
+
 			if (count < this._money) {
 				count++;
 				lblMoney[1] = '$' + count;

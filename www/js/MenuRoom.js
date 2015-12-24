@@ -17,23 +17,10 @@ define(['phaser'], function (Phaser) {
 		this._tabSelector = 0;
 
 		// player setup
-		this._player = JSON.parse(localStorage.getItem('player')) || {
-				initStr: 100,
-				str: 1,
-				balance: 0,
-				health: 100,
-				wallet: 0,
-				score: 0,
-				recordWeight: 0,
-				maxHealth: 100,
-				maxStr: 100
-			};
+		this._player = JSON.parse(localStorage.getItem('player'));
 
 		// challenge setup
-		this._challenge = JSON.parse(localStorage.getItem('challenge')) || {
-				weight: 5,
-				timeLeft: 0
-			};
+		this._challenge = JSON.parse(localStorage.getItem('challenge'));
 
 		// quantity of items to show
 		this._shopItemsShow = 3;
@@ -51,6 +38,10 @@ define(['phaser'], function (Phaser) {
 
 		// add background
 		this.game.add.sprite(0, 0, 'bg_room');
+
+		// load sound effects
+		this._sfxUseItem = this.game.add.audio('sfx_use_item');
+		this._sfxNoMoney = this.game.add.audio('sfx_no_money');
 
 		// add buttons
 		this._btnHealth = this.game.add.button(80, 105, 'icon_health', this.tabHealth, this);
@@ -112,7 +103,7 @@ define(['phaser'], function (Phaser) {
 		var lblStrengthBar = this.game.add.text(
 			iconStr.right + 130,
 			iconStr.bottom,
-			this._player.str + '%',
+			(this._player.str + this._player.strMod).toFixed(1) + '%',
 			styleBar
 		);
 		lblStrengthBar.anchor.set(0.5);
@@ -137,7 +128,7 @@ define(['phaser'], function (Phaser) {
 		var lblHealthBar = this.game.add.text(
 			iconHealth.right + 130,
 			iconHealth.bottom,
-			this._player.health + '%',
+			this._player.health.toFixed(1) + '%',
 			styleBar
 		);
 		lblHealthBar.anchor.set(0.5);
@@ -161,11 +152,21 @@ define(['phaser'], function (Phaser) {
 		this._tabs[0].add(lblHealthBar);
 
 		// tab status
-		var content = [
-			['Wallet', '$' + this._player.wallet],
-			['Record Weight', this._player.recordWeight + ' kg'],
-			['Score', this._player.score + ' pts']
-		];
+		var bestScore = localStorage.getItem('bestScore');
+		var recordWeight = localStorage.getItem('recordWeight');
+		var content = [];
+
+		if (recordWeight != null)
+			if (recordWeight > this._player.recordWeight)
+				this._player.recordWeight = recordWeight;
+
+		content.push(['Wallet', '$' + this._player.wallet]);
+		content.push(['Record Weight', this._player.recordWeight + ' kg']);
+		content.push(['Score', this._player.score + ' pts']);
+
+		if (bestScore != null)
+			content.push(['Best Score', bestScore]);
+
 		var table = this.game.add.text(190, 120, '', styleTable);
 
 		table.parseList(content);
@@ -201,8 +202,8 @@ define(['phaser'], function (Phaser) {
 			this._shopItems.add(button);
 		}, this);
 
-		var btnNext = this.game.add.button(157, 210, 'btn_next', this.listNext, this);
-		var btnPrev = this.game.add.button(btnNext.right + 4, 210, 'btn_prev', this.listPrev, this);
+		var btnPrev = this.game.add.button(157, 210, 'btn_prev', this.listPrev, this);
+		var btnNext = this.game.add.button(btnPrev.right + 4, 210, 'btn_next', this.listNext, this);
 
 		this._tabs[2].add(this._shopItems);
 		this._tabs[2].add(btnNext);
@@ -264,7 +265,7 @@ define(['phaser'], function (Phaser) {
 
 	MenuRoom.prototype.updateTabs = function () {
 		// update tab health
-		this._lblStrengthBar.setText(this._player.str + '%');
+		this._lblStrengthBar.setText((this._player.str + this._player.strMod).toFixed(1) + '%');
 
 		this._strengthBar.clear();
 		this._strengthBar.beginFill(0xffffff);
@@ -277,7 +278,7 @@ define(['phaser'], function (Phaser) {
 		this._strengthBar.alpha = 1;
 		this._strengthBar.endFill();
 
-		this._lblHealthBar.setText(this._player.health + '%');
+		this._lblHealthBar.setText(this._player.health.toFixed(1) + '%');
 
 		this._healthBar.clear();
 		this._healthBar.beginFill(0xffffff);
@@ -307,12 +308,27 @@ define(['phaser'], function (Phaser) {
 
 	MenuRoom.prototype.useItem = function (button, pointer, param, item) {
 		if (this._player.wallet >= item.cost) {
-			this._player.health -= Math.round(this._player.health * item.damage);
+			this._player.health -= this._player.health * item.damage;
+
+			if (this._player.health > this._player.maxHealth) {
+				this._player.health = this._player.maxHealth;
+			} else if (this._player.health < 0) {
+				this._player.health = 0;
+			}
+
 			this._player.wallet -= item.cost;
+			this._player.wallet = (this._player.wallet < 0) ? 0 : this._player.wallet;
 			this._player.balance = (100 - this._player.health) / 1000;
-			localStorage.setItem('playerContext', JSON.stringify(this._player));
-			this._player.str += this._player.str * item.mod;
+			this._player.strMod += this._player.str * item.mod;
+			this._sfxUseItem.play();
 			this.updateTabs();
+		} else {
+			this._sfxNoMoney.play();
+		}
+
+		if (this._player.health === 0) {
+			localStorage.setItem('gameOver', 3);
+			this.game.state.start('GameOver');
 		}
 	};
 
@@ -366,8 +382,9 @@ define(['phaser'], function (Phaser) {
 
 	MenuRoom.prototype.play = function () {
 		// update player balance
-		var balance = this._player.maxHealth - this._player.health;
-		this._player.balance = (balance === 0) ? 0.01 : balance / 100;
+		var balance = (this._player.maxHealth - this._player.health) / 100;
+
+		this._player.balance = (balance === 0) ? 0.01 : balance;
 
 		// save data
 		localStorage.setItem('player', JSON.stringify(this._player));
