@@ -14,6 +14,7 @@ define(['phaser'], function (Phaser) {
 	    this.load.image('bg_room', 'assets/bg_room.png');
 	    this.load.image('bg_list', 'assets/bg_list.png');
 	    this.load.image('bg_list_not', 'assets/bg_list_not.png');
+	    this.load.image('bg_trans', 'assets/bg_trans.png');
 	    this.load.image('icon_health', 'assets/icon_health.png');
 	    this.load.image('icon_info', 'assets/icon_info.png');
 	    this.load.image('icon_play', 'assets/icon_play.png');
@@ -33,8 +34,17 @@ define(['phaser'], function (Phaser) {
 	    this.load.image('btn_newgame', 'assets/btn_newgame.png');
 	    this.load.image('btn_prev', 'assets/btn_prev.png');
 	    this.load.image('btn_next', 'assets/btn_next.png');
+	    this.load.image('btn_dlg_use', 'assets/btn_dlg_use.png');
+	    this.load.image('btn_dlg_cancel', 'assets/btn_dlg_cancel.png');
 	    this.load.image('liftbar', 'assets/liftbar.png');
 	    this.load.image('meter', 'assets/meter.png');
+	    this.load.image('dialog_item', 'assets/dialog_item.png');
+
+	    // load spritesheets
+	    this.load.spritesheet('spr_icon_health', 'assets/spr_icon_health.png', 32, 32);
+	    this.load.spritesheet('spr_icon_info', 'assets/spr_icon_info.png', 32, 32);
+	    this.load.spritesheet('spr_icon_play', 'assets/spr_icon_play.png', 32, 32);
+	    this.load.spritesheet('spr_icon_shop', 'assets/spr_icon_shop.png', 32, 32);
 
 	    // load audio
 	    this.load.audio('sfx_counter', 'assets/sfx_counter.ogg');
