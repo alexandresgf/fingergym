@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.brofistcorp.fingergym" version="1.2.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="com.brofistcorp.fingergym" version="1.2.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>Finger Gym</name>
     <description>
         Set the weight of the bar and try to get to the top!
@@ -10,7 +10,6 @@
     <content src="index.html" />
     <preference name="Fullscreen" value="true" />
     <preference name="Orientation" value="landscape" />
-    <plugin name="cordova-plugin-whitelist" version="1" />
     <access origin="*" />
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
@@ -24,9 +23,5 @@
     <platform name="android">
         <allow-intent href="market:*" />
         <icon src="www/assets/icon-72px.png" density="hdpi" />
-    </platform>
-    <platform name="ios">
-        <allow-intent href="itms:*" />
-        <allow-intent href="itms-apps:*" />
     </platform>
 </widget>
