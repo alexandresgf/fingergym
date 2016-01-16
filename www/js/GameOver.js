@@ -14,6 +14,12 @@ define(['phaser'], function (Phaser) {
 		// load challenge data
 		this._challenge = JSON.parse(localStorage.getItem('challenge'));
 
+		// load best score data
+		this._bestScore = Number(localStorage.getItem('bestScore'));
+
+		// load record weight data
+		this._recordWeight = Number(localStorage.getItem('recordWeight'));
+
 		// score
 		this._score = 0;
 
@@ -54,6 +60,13 @@ define(['phaser'], function (Phaser) {
 		var btnContinue = this.game.add.button(this.game.width / 2 - 80, this.game.height - 50, 'btn_continue', this.newGame, this);
 		var btnRetry = this.game.add.button(this.game.width / 2 - 80, this.game.height - 50, 'btn_retry', this.newGame, this);
 		var btnExit = this.game.add.button(this.game.width / 2 + 80, this.game.height - 50, 'btn_exit', this.exit, this);
+		var btnRanking = this.game.add.button(
+			this.game.width - 10,
+			10,
+			'btn_ranking',
+			this.ranking,
+			this
+		);
 
 		// load sound effects
 		this._sfxCounter = this.game.add.audio('sfx_counter');
@@ -64,10 +77,10 @@ define(['phaser'], function (Phaser) {
 			case 0:
 				lblTitle.setText('Winner');
 				table.parseList(content);
+				btnRetry.visible = false;
 				this._score = this._challenge.timeLeft * 5;
 				this._money = Math.floor(this._score / 10) * 5;
 				this.countScore(table, content);
-				btnRetry.visible = false;
 				break;
 
 			// time is up game over
@@ -90,11 +103,18 @@ define(['phaser'], function (Phaser) {
 				lblText.setText('Your liver stopped by excessive supplementation');
 				btnContinue.visible = false;
 
-				// save best score
-				localStorage.setItem('bestScore', this._player.score);
-
-				// save record weight
-				localStorage.setItem('recordWeight', this._player.recordWeight);
+				// save or update best score and/or record weight
+				if (this._bestScore == null && this._recordWeight == null) {
+					localStorage.setItem('bestScore', this._player.score);
+					localStorage.setItem('recordWeight', this._player.recordWeight);
+				} else if (this._player.score > this._bestScore && this._player.recordWeight > this._recordWeight) {
+					localStorage.setItem('bestScore', this._player.score);
+					localStorage.setItem('recordWeight', this._player.recordWeight);
+				} else if (this._player.score > this._bestScore) {
+					localStorage.setItem('bestScore', this._player.score);
+				} else if (this._player.recordWeight > this._recordWeight) {
+					localStorage.setItem('recordWeight', this._player.recordWeight);
+				}
 
 				// reset player
 				this._player = {
@@ -126,18 +146,21 @@ define(['phaser'], function (Phaser) {
 		btnContinue.anchor.set(0.5);
 		btnRetry.anchor.set(0.5);
 		btnExit.anchor.set(0.5);
+		btnRanking.anchor.setTo(1, 0);
 
 		// reset str modifier
 		this._player.strMod = 0;
 
 		// save changes
 		if (!this._gameOver) {
-			if (this._player.str < this._player.maxStr)
-				this._player.str += this.STR_INC;
-
+			this._player.str += this.STR_INC;
 			this._player.score += this._score;
 			this._player.wallet += this._money;
 			this._player.recordWeight = this._challenge.weight;
+
+			if (this._player.str > this._player.maxStr) {
+				this._player.str = this._player.maxStr;
+			}
 
 			this._challenge.weight += this.WEIGHT_INC;
 		}
@@ -158,8 +181,9 @@ define(['phaser'], function (Phaser) {
 				lblScore[1] = count + ' pts';
 				content[2] = lblScore;
 				table.parseList(content);
-			} else
+			} else {
 				this.countMoney(table, content);
+			}
 		}, this);
 	};
 
@@ -177,8 +201,9 @@ define(['phaser'], function (Phaser) {
 				lblMoney[1] = '$' + count;
 				content[3] = lblMoney;
 				table.parseList(content);
-			} else
+			} else {
 				this.game.time.removeAll();
+			}
 		}, this);
 	};
 
@@ -200,6 +225,82 @@ define(['phaser'], function (Phaser) {
 	GameOver.prototype.exit = function () {
 		localStorage.setItem('quit', 1);
 		this.game.state.start('Ads');
+	};
+
+	GameOver.prototype.showDialogRegister = function () {
+		navigator.notification.prompt(
+			'Type your nickname for global ranking',
+			function (result) {
+				var nickname = result.input1;
+				var regex = new RegExp('^[a-z0-9]+$', 'gi');
+
+				if (regex.test(nickname)) {
+					window.plugins.sim.getSimInfo(
+						function (result) {
+							var currPlayer = JSON.parse(localStorage.getItem('player'));
+							var bestScore = localStorage.getItem('bestScore');
+							var recordWeight = localStorage.getItem('recordWeight');
+							var globalRanking = {
+								nickname: nickname,
+								weight: 0,
+								score: 0,
+								deviceId: result.deviceId
+							};
+							var url;
+
+							if (bestScore != null && recordWeight != null) {
+								globalRanking.weight = recordWeight;
+								globalRanking.score = bestScore;
+							} else if (currPlayer != null) {
+								globalRanking.weight = currPlayer.recordWeight;
+								globalRanking.score = currPlayer.score;
+							}
+
+							url = 'https://fingergym-server.herokuapp.com/save/';
+							url += JSON.stringify(globalRanking);
+
+							$.ajax({
+								url: url,
+								method: 'POST',
+								success: function (data, textStatus, jqXHR) {
+									data = JSON.parse(data);
+
+									if (data.result) {
+										localStorage.setItem('globalRanking', JSON.stringify(globalRanking));
+										navigator.notification.alert('Successfully registered!', null, 'Success');
+									} else {
+										navigator.notification.alert('Your nickname has already taken!', null, 'Fail');
+									}
+								},
+								error: function (jqXHR, textStatus, errorThrown) {
+									navigator.notification.alert(textStatus, null, 'Server Connection Fail');
+								}
+							});
+						},
+						function (result) {
+							navigator.notification.alert('Error on trying to get device info!', null, 'Fail');
+						}
+					);
+				} else {
+					navigator.notification.alert('Just type numbers and letters without space!', null, 'Fail');
+				}
+			},
+			'Registration',
+			['Submit']
+		);
+	};
+
+	GameOver.prototype.ranking = function () {
+		if (localStorage.getItem('globalRanking') == null) {
+			navigator.notification.alert(
+				'You are not registered in the global ranking, continue to complete the registration.',
+				this.showDialogRegister,
+				'Global Ranking'
+			);
+		} else {
+			localStorage.setItem('backState', 1);
+			this.game.state.start('GlobalRanking');
+		}
 	};
 
 	return GameOver;

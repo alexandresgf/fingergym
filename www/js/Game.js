@@ -1,8 +1,6 @@
 define(['phaser'], function (Phaser) {
 	'use strict';
 
-	var global_ball;
-
 	function Game (game) {
         // use init method!
     }
@@ -134,12 +132,13 @@ define(['phaser'], function (Phaser) {
 
 		this._stopWatchBar.clear();
 
-		if (this._sec > 20)
+		if (this._sec > 20) {
 			this._stopWatchBar.beginFill(0x00ff00, 1);
-		else if (this._sec <= 20 && this._sec > 10)
+		} else if (this._sec <= 20 && this._sec > 10) {
 			this._stopWatchBar.beginFill(0xF5ED0C, 1);
-		else
+		} else {
 			this._stopWatchBar.beginFill(0xff0000, 1);
+		}
 
 		this._stopWatchBar.drawRect(0, 0, sec, 5);
 		this._stopWatchBar.endFill();
@@ -170,11 +169,13 @@ define(['phaser'], function (Phaser) {
 		this._liftMeterLeft.y = ((this._bar.y - this._gap - position) / this._liftBarLeft.top) * this._liftBarLeft.top;
 		this._liftMeterRight.y = ((this._bar.y - this._gap + position) / this._liftBarRight.top) * this._liftBarRight.top;
 
-		if (this._liftMeterLeft.y < this._liftBarLeft.top)
+		if (this._liftMeterLeft.y < this._liftBarLeft.top) {
 			this._liftMeterLeft.y = this._liftBarLeft.top;
+		}
 
-		if (this._liftMeterRight.y < this._liftBarRight.top)
+		if (this._liftMeterRight.y < this._liftBarRight.top) {
 			this._liftMeterRight.y = this._liftBarRight.top;
+		}
 	};
 
     return Game;

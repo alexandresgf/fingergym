@@ -158,16 +158,19 @@ define(['phaser'], function (Phaser) {
 		var recordWeight = localStorage.getItem('recordWeight');
 		var content = [];
 
-		if (recordWeight != null)
-			if (recordWeight > this._player.recordWeight)
+		if (recordWeight != null) {
+			if (recordWeight > this._player.recordWeight) {
 				this._player.recordWeight = recordWeight;
+			}
+		}
 
 		content.push(['Wallet', '$' + this._player.wallet]);
 		content.push(['Record Weight', this._player.recordWeight + ' kg']);
 		content.push(['Score', this._player.score + ' pts']);
 
-		if (bestScore != null)
+		if (bestScore != null) {
 			content.push(['Best Score', bestScore]);
+		}
 
 		var table = this.game.add.text(190, 120, '', styleTable);
 
@@ -198,8 +201,9 @@ define(['phaser'], function (Phaser) {
 			button.addChild(table);
 			button.events.onInputUp.add(this.openDialogItem, this, 0, item);
 
-			if (index > 2)
+			if (index > 2) {
 				button.visible = false;
+			}
 
 			this._shopItems.add(button);
 		}, this);
@@ -320,10 +324,11 @@ define(['phaser'], function (Phaser) {
 		this._shop.items.forEach(function (item, index) {
 			var listItem = this._shopItems.getAt(index);
 
-			if (this._player.wallet < item.cost)
+			if (this._player.wallet < item.cost) {
 				listItem.loadTexture('bg_list_not');
-			else
+			} else {
 				listItem.loadTexture('bg_list');
+			}
 		}, this);
 	};
 
@@ -340,37 +345,39 @@ define(['phaser'], function (Phaser) {
 		lblTitle = this.game.add.text(this._dlgItem.width / 2, 20, item.name, styleTitle);
 		lblTitle.anchor.set(0.5);
 
-		if (item.mod === 0)
+		if (item.mod === 0) {
 			lblStr = this.game.add.text(this._dlgItem.width / 2,
 				this._dlgItem.height / 2 - 40,
 				item.mod * 100 + '%',
 				styleGood);
-		else if (item.mod > 0)
+		} else if (item.mod > 0) {
 			lblStr = this.game.add.text(this._dlgItem.width / 2,
 				this._dlgItem.height / 2 - 40,
 				'+' + item.mod * 100 + '%',
 				styleGood);
-		else if (item.mod < 0)
+		} else if (item.mod < 0) {
 			lblStr = this.game.add.text(this._dlgItem.width / 2,
 				this._dlgItem.height / 2 - 40,
 				item.mod * 100 + '%',
 				styleBad);
+		}
 
-		if (item.damage === 0)
+		if (item.damage === 0) {
 			lblHealth = this.game.add.text(this._dlgItem.width / 2,
 				this._dlgItem.height / 2 + 10,
 				item.damage * 100 + '%',
 				styleGood);
-		else if (item.damage > 0)
+		} else if (item.damage > 0) {
 			lblHealth = this.game.add.text(this._dlgItem.width / 2,
 				this._dlgItem.height / 2 + 10,
 				'-' + item.damage * 100 + '%',
 				styleBad);
-		else if (item.damage < 0)
+		} else if (item.damage < 0) {
 			lblHealth = this.game.add.text(this._dlgItem.width / 2,
 				this._dlgItem.height / 2 + 10,
 				'+' + item.damage * 100 * -1 + '%',
 				styleGood);
+		}
 
 		btnUse.events.onInputUp.add(this.useItem, this, 0, item);
 		btnCancel.events.onInputUp.add(this.useItem, this, 0, null);
@@ -446,12 +453,14 @@ define(['phaser'], function (Phaser) {
 
 			shop.children.forEach(function (item, index) {
 				if (this._shopCurrPage < this._shopListPages) {
-					if (item.visible)
+					if (item.visible) {
 						item.visible = false;
+					}
 
 					if (index >= this._shopCurrPage * this._shopItemsShow
-							&& index < (this._shopCurrPage + 1) * this._shopItemsShow)
+							&& index < (this._shopCurrPage + 1) * this._shopItemsShow) {
 						item.visible = true;
+					}
 
 					item.y -= y;
 				}
@@ -459,8 +468,9 @@ define(['phaser'], function (Phaser) {
 
 			this._shopCurrPage++;
 
-			if (this._shopCurrPage > this._shopListPages)
+			if (this._shopCurrPage > this._shopListPages) {
 				this._shopCurrPage = this._shopListPages;
+			}
 		}, this);
 	};
 
@@ -472,19 +482,22 @@ define(['phaser'], function (Phaser) {
 
 			shop.children.forEach(function (item, index) {
 				if (this._shopCurrPage >= 1) {
-					if (item.visible)
+					if (item.visible) {
 						item.visible = false;
+					}
 
 					if (index >= (this._shopCurrPage - 1) * this._shopItemsShow
-							&& index < this._shopCurrPage * this._shopItemsShow)
+							&& index < this._shopCurrPage * this._shopItemsShow) {
 						item.visible = true;
+					}
 
 					item.y += y;
 				}
 			}, this);
 
-			if (this._shopCurrPage < 1)
+			if (this._shopCurrPage < 1) {
 				this._shopCurrPage = 1;
+			}
 		}, this);
 	};
 

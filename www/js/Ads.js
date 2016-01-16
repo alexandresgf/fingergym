@@ -6,10 +6,11 @@ define(['phaser'], function (Phaser) {
 		document.addEventListener('onAdDismiss', function (data) {
 			var quit = Number(localStorage.getItem('quit'));
 
-			if (quit)
+			if (quit) {
 				game.state.start('Menu');
-			else
+			} else {
 				game.state.start('MenuRoom');
+			}
 		});
 	}
 
@@ -22,12 +23,13 @@ define(['phaser'], function (Phaser) {
 		this.game.stage.backgroundColor = '#000';
 
 		// start admob
-		if (AdMob && navigator.connection.type !== Connection.NONE)
+		if (AdMob && navigator.connection.type !== Connection.NONE) {
 			AdMob.showInterstitial();
-		else if (quit)
+		} else if (quit) {
 			this.game.state.start('Menu');
-		else
+		} else {
 			this.game.state.start('MenuRoom');
+		}
 	};
 
 	return Ads;

@@ -1,4 +1,4 @@
-define(['phaser'], function (Phaser) {
+define(['phaser', 'jquery'], function (Phaser, $) {
 	'use strict';
 
 	function Menu (game) {
@@ -17,27 +17,80 @@ define(['phaser'], function (Phaser) {
 		// add buttons
 		this._btnNewGame = this.game.add.button(this.game.width / 2, this.game.height / 2, 'btn_newgame', this.newGame, this);
 		this._btnContinue = this.game.add.button(this.game.width / 2, this.game.height / 2 + 50, 'btn_continue', this.continue, this);
+		this._btnRanking = this.game.add.button(this._btnNewGame.x + this._btnNewGame.width / 2 + 30, this._btnNewGame.y, 'btn_ranking', this.ranking, this);
 
 		// setup buttons
 		this._btnNewGame.anchor.set(0.5);
 		this._btnContinue.anchor.set(0.5);
+		this._btnRanking.anchor.set(0.5);
 
 		// check if already has a game on
-		if (localStorage.getItem('player') == null)
+		if (localStorage.getItem('player') == null) {
 			this._btnContinue.visible = false;
+		}
+	};
 
-		// add tap label
-		//var style = { font: 'italic 14px BackTo1982', fill: '#fff' };
-		//var lblTap = this.game.add.text(this.game.width / 2, this.game.height / 2, 'TAP to continue', style);
-		//lblTap.anchor.set(0.5);
+	Menu.prototype.showDialogRegister = function () {
+		navigator.notification.prompt(
+			'Type your nickname for global ranking',
+			function (result) {
+				var nickname = result.input1;
+				var regex = new RegExp('^[a-z0-9]+$', 'gi');
 
-		// blink tap label
-		//this.game.add.tween(lblTap).to({ alpha: 0 }, 1000, Phaser.Easing.Linear.None, true, 0, 500, true);
+				if (regex.test(nickname)) {
+					window.plugins.sim.getSimInfo(
+						function (result) {
+							var currPlayer = JSON.parse(localStorage.getItem('player'));
+							var bestScore = localStorage.getItem('bestScore');
+							var recordWeight = localStorage.getItem('recordWeight');
+							var globalRanking = {
+								nickname: nickname,
+								weight: 0,
+								score: 0,
+								deviceId: result.deviceId
+							};
+							var url;
 
-		// tap to start
-		//this.input.onTap.add(function () {
-		//	this.game.state.start('MenuRoom');
-		//}, this);
+							if (bestScore != null && recordWeight != null) {
+								globalRanking.weight = recordWeight;
+								globalRanking.score = bestScore;
+							} else if (currPlayer != null) {
+								globalRanking.weight = currPlayer.recordWeight;
+								globalRanking.score = currPlayer.score;
+							}
+
+							url = 'https://fingergym-server.herokuapp.com/save/';
+							url += JSON.stringify(globalRanking);
+
+							$.ajax({
+								url: url,
+								method: 'POST',
+								success: function (data, textStatus, jqXHR) {
+									data = JSON.parse(data);
+
+									if (data.result) {
+										localStorage.setItem('globalRanking', JSON.stringify(globalRanking));
+										navigator.notification.alert('Successfully registered!', null, 'Success');
+									} else {
+										navigator.notification.alert('Your nickname has already taken!', null, 'Fail');
+									}
+								},
+								error: function (jqXHR, textStatus, errorThrown) {
+									navigator.notification.alert(textStatus, null, 'Server Connection Fail');
+								}
+							});
+						},
+						function (result) {
+							navigator.notification.alert('Error on trying to get device info!', null, 'Fail');
+						}
+					);
+				} else {
+					navigator.notification.alert('Just type numbers and letters without space!', null, 'Fail');
+				}
+			},
+			'Registration',
+			['Submit']
+		);
 	};
 
 	Menu.prototype.newGame = function () {
@@ -69,8 +122,9 @@ define(['phaser'], function (Phaser) {
 		}
 
 		if (recordWeight != null) {
-			if (currChallenge.weight > recordWeight)
+			if (currChallenge.weight > recordWeight) {
 				localStorage.setItem('recordWeight', currChallenge.weight);
+			}
 		} else if (currChallenge != null) {
 			localStorage.setItem('recordWeight', currChallenge.weight);
 		}
@@ -82,6 +136,19 @@ define(['phaser'], function (Phaser) {
 
 	Menu.prototype.continue = function () {
 		this.game.state.start('MenuRoom');
+	};
+
+	Menu.prototype.ranking = function () {
+		if (localStorage.getItem('globalRanking') == null) {
+			navigator.notification.alert(
+				'You are not registered in the global ranking, continue to complete the registration.',
+				this.showDialogRegister,
+				'Global Ranking'
+			);
+		} else {
+			localStorage.setItem('backState', 0);
+			this.game.state.start('GlobalRanking');
+		}
 	};
 
 	return Menu;
