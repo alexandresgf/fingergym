@@ -114,19 +114,21 @@ define(['phaser', 'jquery'], function (Phaser, $) {
 			timeLeft: 0
 		};
 
-		if (bestScore != null) {
-			if (currPlayer.score > bestScore)
+		if (currPlayer != null) {
+			if (bestScore != null) {
+				if (currPlayer.score > bestScore)
+					localStorage.setItem('bestScore', currPlayer.score);
+			} else if (currPlayer != null) {
 				localStorage.setItem('bestScore', currPlayer.score);
-		} else if (currPlayer != null) {
-			localStorage.setItem('bestScore', currPlayer.score);
-		}
+			}
 
-		if (recordWeight != null) {
-			if (currChallenge.weight > recordWeight) {
+			if (recordWeight != null) {
+				if (currChallenge.weight > recordWeight) {
+					localStorage.setItem('recordWeight', currChallenge.weight);
+				}
+			} else if (currChallenge != null) {
 				localStorage.setItem('recordWeight', currChallenge.weight);
 			}
-		} else if (currChallenge != null) {
-			localStorage.setItem('recordWeight', currChallenge.weight);
 		}
 
 		localStorage.setItem('player', JSON.stringify(player));
@@ -140,10 +142,47 @@ define(['phaser', 'jquery'], function (Phaser, $) {
 
 	Menu.prototype.ranking = function () {
 		if (localStorage.getItem('globalRanking') == null) {
-			navigator.notification.alert(
-				'You are not registered in the global ranking, continue to complete the registration.',
-				this.showDialogRegister,
-				'Global Ranking'
+			var self = this;
+
+			window.plugins.sim.getSimInfo(
+				function (result) {
+					var url;
+
+					url = 'https://fingergym-server.herokuapp.com/verify/';
+					url += result.deviceId;
+
+					$.ajax({
+						url: url,
+						method: 'GET',
+						success: function (data, textStatus, jqXHR) {
+							data = JSON.parse(data);
+
+							if (data.result.length !== 0) {
+								var globalRanking = {
+									nickname: data.result[0].nickname,
+									weight: data.result[0].weight,
+									score: data.result[0].score,
+									deviceId: data.result[0].deviceId
+								};
+
+								localStorage.setItem('bestScore', globalRanking.score);
+								localStorage.setItem('recordWeight', globalRanking.weight);
+								localStorage.setItem('globalRanking', JSON.stringify(globalRanking));
+								localStorage.setItem('backState', 0);
+								self.game.state.start('GlobalRanking');
+							} else {
+								navigator.notification.alert(
+									'You are not registered in the global ranking, continue to complete the registration.',
+									self.showDialogRegister,
+									'Global Ranking'
+								);
+							}
+						},
+						error: function (jqXHR, textStatus, errorThrown) {
+							navigator.notification.alert(textStatus, null, 'Server Connection Fail');
+						}
+					});
+				}
 			);
 		} else {
 			localStorage.setItem('backState', 0);
